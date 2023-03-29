@@ -1,0 +1,11 @@
+pillow
+opencv-python
+numpy==1.19.5
+scipy==1.5.4
+brisque==0.0.14
+streamlit
+streamlit_webrtc
+segmentation_models_pytorch
+pytorch_lightning
+torchvision
+albumentations
