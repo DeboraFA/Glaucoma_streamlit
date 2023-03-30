@@ -2,7 +2,7 @@ from streamlit_webrtc import VideoProcessorBase, RTCConfiguration,WebRtcMode,web
 from utils import *
 import cv2
 import streamlit as st
-import mediapipe as mp
+# import mediapipe as mp
 import av
 
 RTC_CONFIGURATION = RTCConfiguration(
