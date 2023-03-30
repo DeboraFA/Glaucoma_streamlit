@@ -1,5 +1,5 @@
 from streamlit_webrtc import VideoProcessorBase, RTCConfiguration,WebRtcMode,webrtc_streamer
-from utils import *
+# from utils import *
 import cv2
 import streamlit as st
 # import mediapipe as mp
