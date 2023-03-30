@@ -1,20 +1,29 @@
-import av
 import cv2
-from aiortc.contrib.media import MediaRecorder
-from streamlit_webrtc import WebRtcMode, webrtc_streamer
+import streamlit as st
 
+def main():
+    st.title("Camera Stream")
+    run_camera()
 
-def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
-    img = frame.to_ndarray(format="bgr24")
+def run_camera():
+    cap = cv2.VideoCapture(0)
 
-    # perform edge detection
-    img = cv2.cvtColor(cv2.Canny(img, 100, 200), cv2.COLOR_GRAY2BGR)
+    while True:
+        ret, frame = cap.read()
 
-    return av.VideoFrame.from_ndarray(img, format="bgr24")
+        if not ret:
+            st.error("Unable to capture camera.")
+            break
 
+        # Display the video stream in Streamlit
+        st.image(frame, channels="BGR")
 
-def app():
-    def in_recorder_factory() -> MediaRecorder:
-        return MediaRecorder(
-            "input.flv", format="flv"
-        )  
+        if st.button("Stop Camera"):
+            break
+
+    # Release the camera and close the Streamlit app
+    cap.release()
+    st.write("Camera Stopped")
+
+if __name__ == "__main__":
+    main()
