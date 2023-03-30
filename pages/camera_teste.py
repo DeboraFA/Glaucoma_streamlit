@@ -1,19 +1,14 @@
-import streamlit as st
-import streamlit_webrtc as webrtc
 
-def main():
-    # Create a WebRTC video chat component
-    webrtc_streamer = webrtc.Streamer(
-        key="example",
-        mode=webrtc.StreamerMode.SENDRECV,
-        rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-        media_stream_constraints={"video": True, "audio": True},
-    )
+import streamlit as st 
+from streamlit_webrtc import webrtc_streamer
+import av
 
-    # Render the video chat component
-    if webrtc_streamer is not None:
-        video_stream = webrtc_streamer.subscribe("video")
-        st.video(video_stream)
+def video_frame_callback(frame):
+    img = frame.to_ndarray(format="bgr24")
 
-if __name__ == "__main__":
-    main()
+    # ... Image processing, or whatever you want ...
+
+    return av.VideoFrame.from_ndarray(img, format="bgr24")
+
+
+webrtc_streamer(key="example", video_frame_callback=video_frame_callback)
