@@ -14,7 +14,8 @@ def video_frame_callback(frame):
     #flipped = img[::-1,:,:]
     pred_img = yolo.predictions(img)
 
-    return av.VideoFrame.from_ndarray(pred_img, format="bgr24")
+    # return av.VideoFrame.from_ndarray(pred_img, format="bgr24")
+    return av.VideoFrame.recv(pred_img, format="bgr24")
 
 
 webrtc_streamer(key="example", 
