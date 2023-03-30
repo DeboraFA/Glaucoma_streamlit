@@ -1,45 +1,29 @@
-from streamlit_webrtc import VideoProcessorBase, RTCConfiguration,WebRtcMode,webrtc_streamer
-# from utils import *
 import cv2
 import streamlit as st
-# import mediapipe as mp
-import av
-
-RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-)
 
 def main():
-    st.header("Live stream processing")
+    st.title("Camera Stream")
+    run_camera()
 
-    sign_language_det = "Sign Language Live Detector"
-    app_mode = st.sidebar.selectbox( "Choose the app mode",
-        [
-            sign_language_det
-        ],
-    )
+def run_camera():
+    cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 
-    st.subheader(app_mode)
+    while True:
+        ret, frame = cap.read()
 
-    if app_mode == sign_language_det:
-        sign_language_detector()
- 
+        if not ret:
+            st.error("Unable to capture camera.")
+            break
 
-def sign_language_detector():
+        # Display the video stream in Streamlit
+        st.image(frame, channels="BGR")
 
-    class OpenCVVideoProcessor(VideoProcessorBase):
-        def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-            img = frame.to_ndarray(format="bgr24")
-            return av.VideoFrame.from_ndarray(img,format="bgr24")
+        if st.button("Stop Camera"):
+            break
 
-    webrtc_ctx = webrtc_streamer(
-        key="opencv-filter",
-        mode=WebRtcMode.SENDRECV,
-        rtc_configuration=RTC_CONFIGURATION,
-        video_processor_factory=OpenCVVideoProcessor,
-        async_processing=True,
-    )
-
+    # Release the camera and close the Streamlit app
+    cap.release()
+    st.write("Camera Stopped")
 
 if __name__ == "__main__":
     main()
