@@ -1,6 +1,5 @@
 import cv2
 import streamlit as st
-import numpy
 
 st.title("Webcam Live Feed")
 run = st.checkbox('Run')

@@ -1,7 +1,7 @@
 
 
 import streamlit as st
-from glaucoma_segmentation import test_segmentation_disc, test_segmentation_cup
+from glaucoma_segmentation import test_segmentation_disc, test_segmentation_cup, CDR, BVR, NRR
 from PIL import Image
 import numpy as np
 import cv2
@@ -17,8 +17,8 @@ st.write('Please Upload Image to get detections')
 
 # # test evaluate
 # timm-mobilenetv3_large_075
-seg_encoder = 'resnet50' # https://github.com/qubvel/segmentation_models.pytorch
-seg_model = 'FPN' #  Unet, UnetPlusPlus, MAnet, Linknet, FPN, PSPNet, PAN, DeepLabV3,DeepLabV3Plus
+seg_encoder = 'mobilenet_v2' # https://github.com/qubvel/segmentation_models.pytorch
+seg_model = 'Unetplusplus' #  Unet, UnetPlusPlus, MAnet, Linknet, FPN, PSPNet, PAN, DeepLabV3,DeepLabV3Plus
 
 # Allow the user to upload multiple image files
 uploaded_files = st.file_uploader("Choose images to display", accept_multiple_files=True)
@@ -40,11 +40,16 @@ if uploaded_files:
 
             result = image.copy()
             result = cv2.resize(result, (224,224))
-            for cnt in contours_cup:
-                img_contours1 = cv2.drawContours(result, cnt, -1, (0, 255, 0), 2)
+            for cnt_disc in contours_cup:
+                img_contours1 = cv2.drawContours(result, [cnt_disc], -1, (0, 255, 0), 2)
 
-            for cnt2 in contours_disc:
-                img_contours = cv2.drawContours(img_contours1, cnt2, -1, (255, 0, 0), 2)
+            for cnt_cup in contours_disc:
+                img_contours = cv2.drawContours(img_contours1, [cnt_cup], -1, (255, 0, 0), 2)
+
+            cdr = CDR(cnt_disc, cnt_cup)
+            nrr = NRR(cnt_disc, cnt_cup, image)
+            bvr = BVR(cnt_disc, image)
+
             next(cols).image(img_contours, width=240, caption=img.name)
         
 

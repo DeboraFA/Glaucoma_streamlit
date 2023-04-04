@@ -174,6 +174,8 @@ def test_segmentation_disc(img, seg_encoder, seg_model):
         load_model = './models/segmentacao/model_disc_Unet_ResNet50.pth'
     elif seg_encoder == 'resnet50' and seg_model == 'FPN':
         load_model = './models/segmentacao/model_disc_FPN_ResNet50.pth'
+    elif seg_encoder == 'mobilenet_v2' and seg_model == 'Unetplusplus':
+        load_model = './models/segmentacao/model_disc_Unetplusplus_Mobilev2.pth'
     
 
     trainer = pl.Trainer()
@@ -204,6 +206,8 @@ def test_segmentation_cup(img, seg_encoder, seg_model):
     
     elif seg_encoder == 'resnet50' and seg_model == 'FPN':
         load_model = './models/segmentacao/model_cup_FPN_ResNet50.pth'
+    elif seg_encoder == 'mobilenet_v2' and seg_model == 'Unetplusplus':
+        load_model = './models/segmentacao/model_cup_Unetplusplus_Mobilev2.pth'
     
     trainer = pl.Trainer()
 
@@ -224,4 +228,121 @@ def test_segmentation_cup(img, seg_encoder, seg_model):
 
 
 
+from skimage.morphology import disk, black_tophat
 
+def CDR(disc, cup):
+    #### CDR ####
+    disc_area = cv2.contourArea(disc)
+    cup_area = cv2.contourArea(cup)
+    
+    CDR = cup_area/disc_area
+    
+    return CDR
+
+
+
+def NRR(disc,cup,img):
+
+    x,y,z = np.shape(img)
+
+    maskSup, maskNasal, maskInf, maskTemp = Create_Masks(x,y)
+
+    mask = np.zeros((x,y), np.uint8)
+    disc = cv2.drawContours(mask,[disc],0,[255,255,255],-1)
+
+    mask = np.zeros((x,y), np.uint8)
+    cup = cv2.drawContours(mask,[cup],0,[255,255,255],-1)
+
+    nrr = cv2.bitwise_xor(disc,cup)
+
+    nrrSup = cv2.bitwise_and(nrr,maskSup)
+    contours_nrrSup, hierarchy_nrrSup = cv2.findContours(nrrSup, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)        
+    if np.shape(contours_nrrSup) == (0,):
+        nrrSup_area = 0
+    else:
+        nrrSup_area = cv2.contourArea(contours_nrrSup[0])
+
+    nrrNasal = cv2.bitwise_and(nrr,maskNasal)
+    contours_nrrNasal, hierarchy_nrrNasal = cv2.findContours(nrrNasal, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if np.shape(contours_nrrNasal) == (0,):
+        nrrNasal_area = 1
+    else:
+        nrrNasal_area = cv2.contourArea(contours_nrrNasal[0])
+
+
+    nrrInf = cv2.bitwise_and(nrr,maskInf)
+    contours_nrrInf, hierarchy_nrrInf = cv2.findContours(nrrInf, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if np.shape(contours_nrrInf) == (0,):
+        nrrInf_area = 0
+    else:
+        nrrInf_area = cv2.contourArea(contours_nrrInf[0])
+
+    nrrTemp = cv2.bitwise_and(nrr,maskTemp)
+    contours_nrrTemp, hierarchy_nrrTemp = cv2.findContours(nrrTemp, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if np.shape(contours_nrrTemp) == (0,):
+        nrrTemp_area = 1
+    else:
+        nrrTemp_area = cv2.contourArea(contours_nrrTemp[0])
+
+    NRR = (nrrInf_area + nrrSup_area)/(nrrNasal_area + nrrTemp_area)
+
+    return NRR
+    
+    
+def BVR(disc_cnt,img):
+    #### Mudar para a de Gerar_imagens
+    x,y,z = np.shape(img)
+    
+    mask = np.zeros((x,y), np.uint8)
+    disc_img = cv2.drawContours(mask,[disc_cnt],0,[255,255,255],-1)
+    
+    r,g,b = cv2.split(img)
+    
+    g = cv2.bitwise_and(g,disc_img)
+    
+    maskSup, maskNasal, maskInf, maskTemp = Create_Masks(x,y)
+    
+    gBT = black_tophat(g, disk(20))
+    ret2,th2 = cv2.threshold(gBT,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    imT = cv2.medianBlur(th2, 11)
+    
+    bvrSup = cv2.bitwise_and(imT,maskSup)
+    bvrSupArea = np.sum(bvrSup == 255)
+
+    bvrNasal = cv2.bitwise_and(imT,maskNasal)
+    bvrNasalArea = np.sum(bvrNasal == 255)
+
+    bvrInf = cv2.bitwise_and(imT,maskInf)
+    bvrInfArea = np.sum(bvrInf == 255)
+
+    bvrTemp = cv2.bitwise_and(imT,maskTemp)
+    bvrTempArea = np.sum(bvrTemp == 255)
+
+    bvr = (bvrInfArea + bvrSupArea)/(bvrNasalArea + bvrTempArea)
+      
+    return bvr
+
+
+
+def Create_Masks(x,y):
+    x = x
+    y = y
+    mask = np.zeros((x,y), np.uint8)
+    triangle_temp = np.array( [(x, 0), (x, y), (int(x/2), int(y/2)) ])
+    maskTemp = cv2.drawContours(mask, [triangle_temp], 0, (255,255,255), -1)
+
+    rows,cols = maskTemp.shape
+
+    M = cv2.getRotationMatrix2D((cols/2,rows/2),90,1)
+    maskSup = cv2.warpAffine(maskTemp,M,(cols,rows))
+
+    M = cv2.getRotationMatrix2D((cols/2,rows/2),90,1)
+    maskNasal = cv2.warpAffine(maskSup,M,(cols,rows))
+
+    M = cv2.getRotationMatrix2D((cols/2,rows/2),90,1)
+    maskInf = cv2.warpAffine(maskNasal,M,(cols,rows))
+
+    M = cv2.getRotationMatrix2D((cols/2,rows/2),90,1)
+    maskTemp = cv2.warpAffine(maskInf,M,(cols,rows))
+    
+    return maskSup, maskNasal, maskInf, maskTemp
