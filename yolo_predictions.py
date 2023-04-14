@@ -22,9 +22,9 @@ class YOLO_Pred():
         self.yolo.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
         
     
-        
+    
     def predictions(self,image):
-        
+        img_copy = image.copy()
         row, col, d = image.shape
         # get the YOLO prediction from the the image
         # step-1 convert image into square image (array)
@@ -48,7 +48,8 @@ class YOLO_Pred():
         image_w, image_h = input_image.shape[:2]
         x_factor = image_w/INPUT_WH_YOLO
         y_factor = image_h/INPUT_WH_YOLO
-
+        bb_conf = 0
+        index = 0
         for i in range(len(detections)):
             row = detections[i]
             confidence = row[4] # confidence of detection an object
@@ -97,7 +98,7 @@ class YOLO_Pred():
             cv2.putText(image,text,(x,y-10),cv2.FONT_HERSHEY_PLAIN,3,(0,0,0),3)
             
             
-        return image
+        return image, bb_conf, boxes, index, img_copy
     
     
     def generate_colors(self,ID):

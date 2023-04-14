@@ -293,6 +293,7 @@ def BVR(disc_cnt,img):
     #### Mudar para a de Gerar_imagens
     x,y,z = np.shape(img)
     
+    
     mask = np.zeros((x,y), np.uint8)
     disc_img = cv2.drawContours(mask,[disc_cnt],0,[255,255,255],-1)
     
