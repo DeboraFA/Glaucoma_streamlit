@@ -9,3 +9,4 @@ segmentation_models_pytorch
 pytorch_lightning
 torchvision
 albumentations
+imutils
