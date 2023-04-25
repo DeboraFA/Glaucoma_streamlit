@@ -10,3 +10,4 @@ pytorch_lightning
 torchvision
 albumentations
 imutils
+matplotlib
