@@ -3,11 +3,11 @@ opencv-python
 numpy==1.19.5
 scipy==1.5.4
 brisque==0.0.14
+streamlit==1.19.0
+streamlit_webrtc==0.45.0
 segmentation_models_pytorch
 pytorch_lightning
 torchvision
 albumentations
 imutils
 matplotlib
-streamlit==0.52.1
-opencv-python==4.1.2.30
