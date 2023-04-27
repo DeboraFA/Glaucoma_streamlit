@@ -3,7 +3,7 @@ opencv-python
 numpy==1.19.5
 scipy==1.5.4
 brisque==0.0.14
-streamlit==1.19.0
+streamlit==0.52.1
 streamlit_webrtc==0.6.2
 segmentation_models_pytorch
 pytorch_lightning
