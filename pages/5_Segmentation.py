@@ -40,10 +40,10 @@ if uploaded_files:
 
             result = image.copy()
             result = cv2.resize(result, (224,224))
-            for cnt_disc in contours_cup:
+            for cnt_disc in contours_disc:
                 img_contours1 = cv2.drawContours(result, [cnt_disc], -1, (0, 255, 0), 2)
 
-            for cnt_cup in contours_disc:
+            for cnt_cup in contours_cup:
                 img_contours = cv2.drawContours(img_contours1, [cnt_cup], -1, (255, 0, 0), 2)
 
             cdr = CDR(cnt_disc, cnt_cup)
